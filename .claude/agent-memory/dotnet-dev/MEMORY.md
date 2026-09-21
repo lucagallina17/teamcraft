@@ -7,7 +7,7 @@ Sistema di talent matching: collega dipendenti, competenze e progetti; genera pr
 **Backend**: .NET 8, EF Core 8, SQL Server (LocalDB in locale). Clean Architecture a 4 progetti: `TeamCraft.Domain`, `.Application`, `.Infrastructure`, `.API`, più `TeamCraft.Tests` (xUnit). Migrato da .NET 7 a .NET 8 il 2026-09-18 in vista del deploy su Azure (.NET 7 è EOL, non più selezionabile come stack per nuovi Web App).
 **Librerie**: MediatR (Command/Query + Domain Event in-memory), MassTransit (Integration Event, oggi In-Memory Transport, nessun broker reale collegato), Moq (test).
 **Frontend**: Angular 21, standalone components, Signals, PrimeNG, Reactive Forms. Font Inter, palette Apple-style (`#0071e3` accent).
-**Deploy**: backend **live su Azure** (Free Trial) — App Service `teamcraft-api-g5bfaecpdjevf3cf` (tier F1, Linux, .NET 8) + Azure SQL Database (tier Basic), connessione end-to-end funzionante (migration auto-applicate all'avvio). Deploy va fatto da **Visual Studio → Publish** (Azure App Service Linux) — il drag&drop Kudu/QuickDeploy nel Portale è inutilizzabile per binari già compilati (dettagli in `log/2026-09-18-sessione.md`). Frontend non ancora deployato.
+**Deploy (tutto live, account Azure personale di Luca, RG `teamcraft-rg`)**: API su App Service (F1, Linux, .NET 8, **Sweden Central**) `teamcraft-api-haawg0cfgzdpdxgn`, Azure SQL Basic, frontend su **Static Web Apps Free** `red-stone-04625aa0f.1.azurestaticapps.net` via **GitHub Actions** (push su `main` ripubblica). Repo: `github.com/lucagallina17/teamcraft`. Configurazione via env var dell'App Service, mai nel repo: `ConnectionStrings__DefaultConnection`, `Cors__AllowedOrigins__0` (origin della SWA, senza slash finale). Backend si pubblica ancora **a mano da Visual Studio → Publish** (il drag&drop Kudu/QuickDeploy è inutilizzabile per binari già compilati). Le regioni "West Europe" risultano bloccate per nuovi clienti su questo account (`RequestDisallowedByAzure`). Dettagli in `log/2026-09-18-sessione.md` e `log/2026-09-21-sessione.md`.
 
 ## Regole di dipendenza (Clean Architecture) — non violare mai
 
@@ -68,15 +68,20 @@ Domain non conosce nessun altro livello. Application può usare Domain liberamen
 - Autenticazione JWT: **non implementata**. `CreatedBy` su `Project` è un placeholder.
 - MassTransit: solo In-Memory Transport, mai collegato a un vero broker (RabbitMQ/Kafka).
 - Test: xUnit su `TeamAggregate`, `TeamReviewAggregate`, `ActivateTeamCommandHandler`, `SubmitTeamReviewCommandHandler` (con Moq, incl. doppio mock coordinato). 9/9 verdi dopo upgrade a .NET 8.
-- **Deploy Azure backend: completato e verificato** (2026-09-18) — vedi riga Deploy sopra e `log/2026-09-18-sessione.md` per il dettaglio del percorso (parecchi ostacoli di tooling Azure/VS, tutti risolti).
-- **Nessun commit Git nel repository** (`git log` → "does not have any commits yet") nonostante tutto il lavoro fatto finora — da commitare.
+- **Deploy completo e verificato** (2026-09-21): backend + DB + frontend online e collegati (CORS verificato con `curl`). Frontend: `environment.ts` = produzione (URL API Azure), `environment.development.ts` = locale (`localhost:7026`), swap via `fileReplacements`; `public/staticwebapp.config.json` fa il fallback SPA.
+- Git: 4 commit su `main`, pushato su GitHub, working tree pulito. `README.md` di root presente (inglese, portfolio). Nota: dopo la creazione della SWA, Azure committa il workflow su GitHub, quindi fare `git pull` prima di un push se il locale è indietro.
+
+## Modalità di collaborazione (preferenza di Luca)
+
+Su Azure/Git/CI-CD/infrastruttura **guidare passo passo e lasciare che digiti lui i comandi** (spiegare il concetto, un passo per volta, aspettare l'esito). Non committare/pushare né toccare risorse cloud in autonomia. Modifiche al codice dell'app possono restare a Claude se richieste.
 
 ## Prossimi passi
 
-1. **Committare il lavoro fatto finora** (repo attualmente a zero commit).
-2. Deploy del frontend Angular (probabile Azure Static Web Apps) + aggiornare `Cors:AllowedOrigins` con l'origin di produzione.
+1. **Cancellare le risorse del vecchio account Azure** (RG, SQL, App Service) per non consumare credito.
+2. Controllare se un profilo di publish del vecchio account (`Properties/PublishProfiles`) è stato committato e ripulirlo.
 3. Autenticazione JWT (mai iniziata).
-4. Rivalutare il target framework prima di novembre 2026 (fine supporto .NET 8 LTS) — probabile prossimo step .NET 10.
-5. Valutare se estendere DDD a `Project` (oggi anemico) — `project.Status = ...` scritto direttamente in `ActivateProjectOnTeamActivatedHandler`, nessuna protezione di dominio.
-6. Sistema di notifiche/toast: completo lato frontend, verificare copertura errori su tutti gli endpoint nuovi (TeamReview).
-7. Pulizia: rimuovere la cartella residua `src/backend/TeamCraft/TeamCraft.API/` (vecchio scaffold, non referenziata dalla `.sln`).
+4. CI/CD anche per il backend (oggi publish manuale da Visual Studio).
+5. Rivalutare il target framework prima di novembre 2026 (fine supporto .NET 8 LTS) — probabile .NET 10.
+6. Valutare se estendere DDD a `Project` (oggi anemico) — `project.Status = ...` scritto direttamente in `ActivateProjectOnTeamActivatedHandler`, nessuna protezione di dominio.
+7. Pulizia: cartella residua `src/backend/TeamCraft/TeamCraft.API/` (vecchio scaffold, fuori dalla `.sln`); `src/ai_output_audit.md` dice ancora ".NET 7".
+8. Notifiche/toast: verificare copertura errori su tutti gli endpoint nuovi (TeamReview). Budget bundle Angular in warning (700 kB vs 500 kB).

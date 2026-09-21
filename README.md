@@ -107,7 +107,7 @@ dotnet test
 
 ## Roadmap
 
-- Authentication and authorization (JWT)
+- Authentication and authorization (JWT). There is no authentication yet, so the frontend sends an all-zero placeholder GUID as the creator when creating a project (`CreatedBy`); it will be replaced by the authenticated user's id once JWT is in place.
 - Connect MassTransit to a real broker (RabbitMQ or Azure Service Bus)
 - Extend DDD to `Project`, `Employee` and the remaining entities
 - CI/CD pipeline for the backend

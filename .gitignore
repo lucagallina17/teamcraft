@@ -14,3 +14,7 @@ dist/
 # OS
 Thumbs.db
 .DS_Store
+
+# Visual Studio publish
+**/Properties/PublishProfiles/
+**/Properties/ServiceDependencies/
