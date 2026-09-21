@@ -1,0 +1,57 @@
+<div class="page">
+    <div class="page__header">
+        <div>
+            <h1>Progetti</h1>
+            <p class="page__subtitle">{{ projects().length }} progetti totali</p>
+        </div>
+        <p-button label="Nuovo progetto" icon="pi pi-plus" (onClick)="onNew()" />
+    </div>
+
+    <p-card styleClass="table-card">
+        <p-table [value]="projects()" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+            [showCurrentPageReport]="true" currentPageReportTemplate="{first} - {last} di {totalRecords} progetti"
+            styleClass="clean-table">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nome</th>
+                    <th>Stato</th>
+                    <th>Inizio</th>
+                    <th>Fine</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-project>
+                <tr class="row-hoverable" (click)="onView(project)">
+                    <td>{{ project.name }}</td>
+                    <td>
+                        <p-tag [value]="statusLabel(project.status)" [severity]="statusSeverity(project.status)" />
+                    </td>
+                    <td class="text-secondary">{{ project.startDate | date:'dd MMM yyyy' }}</td>
+                    <td class="text-secondary">{{ project.endDate | date:'dd MMM yyyy' }}</td>
+                    <td class="col-actions" (click)="$event.stopPropagation()">
+                        <button class="icon-btn" (click)="onView(project)" title="Visualizza">
+                            <i class="pi pi-arrow-right"></i>
+                        </button>
+                        @if (project?.status === 'Draft') {
+                        <button class="icon-btn icon-btn--danger" (click)="onDelete(project)" title="Elimina">
+                            <i class="pi pi-trash"></i>
+                        </button>
+                        }
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <i class="pi pi-briefcase empty-state__icon"></i>
+                        <p>Nessun progetto ancora creato</p>
+                    </td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </p-card>
+</div>

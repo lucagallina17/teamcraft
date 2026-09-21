@@ -1,0 +1,90 @@
+  .proposals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+  }
+
+  .proposal-card .p-card-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+  }
+
+  .proposal-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+  }
+
+  .proposal-card__rank {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-secondary);
+  }
+
+  .proposal-card__score {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+  }
+
+  .score-value {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+  }
+
+  .score-label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+  }
+
+  .proposal-card__members {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      border-top: 1px solid var(--color-border);
+      padding-top: 16px;
+  }
+
+  .member-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f2;
+  }
+
+  .member-row:last-child {
+      border-bottom: none;
+  }
+
+  .member-row__name {
+      font-size: 14px;
+      font-weight: 500;
+  }
+
+  .member-row__role {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+  }
+
+  .member-row__score {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent);
+  }
+
+  .full-width {
+      width: 100%;
+      justify-content: center;
+  }
+
+  @media (max-width: 900px) {
+      .proposals-grid {
+          grid-template-columns: 1fr;
+      }
+  }

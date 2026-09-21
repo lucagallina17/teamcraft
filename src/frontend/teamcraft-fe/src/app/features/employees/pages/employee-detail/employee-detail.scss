@@ -1,0 +1,41 @@
+  .section__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+  }
+
+  .team-history-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f2;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+  }
+
+  .team-history-row:last-child {
+      border-bottom: none;
+  }
+
+  .team-history-row:hover {
+      opacity: 0.7;
+  }
+
+  .team-history-row__project {
+      font-size: 14px;
+      font-weight: 500;
+  }
+
+  .team-history-row__role {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-top: 2px;
+  }
+
+  .team-history-row__meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+  }

@@ -1,0 +1,41 @@
+<div class="page">
+    <div class="page__header page__header--stacked">
+        <button class="back-link" (click)="onCancel()">
+            <i class="pi pi-chevron-left"></i> Competenze
+        </button>
+        <h1>{{ isNew() ? 'Nuova competenza' : 'Modifica competenza' }}</h1>
+    </div>
+
+    <p-card styleClass="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="form">
+            <div class="form__grid">
+                <div class="field">
+                    <label for="name">Nome</label>
+                    <input pInputText id="name" formControlName="name" />
+                    @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                    <span class="field__error">Il nome è obbligatorio</span>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="type">Tipo</label>
+                    <p-select [options]="competencyTypes" formControlName="type" placeholder="Seleziona un tipo"
+                        class="w-full md:w-56" />
+                    @if (form.get('type')?.invalid && form.get('type')?.touched) {
+                    <span class="field__error">Il tipo è obbligatorio</span>
+                    }
+                </div>
+            </div>
+
+            <div class="form__actions">
+                <p-button type="submit" label="Salva modifiche" [disabled]="form.invalid" />
+
+                @if (!isNew()) {
+                <button type="button" class="btn-danger-text" (click)="onDelete()">
+                    Elimina competenza
+                </button>
+                }
+            </div>
+        </form>
+    </p-card>
+</div>

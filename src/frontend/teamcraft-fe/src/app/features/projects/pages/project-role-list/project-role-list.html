@@ -1,0 +1,49 @@
+<div class="page">
+    <div class="page__header">
+        <div>
+            <h1>Ruoli</h1>
+            <p class="page__subtitle">Il catalogo globale dei ruoli disponibili</p>
+        </div>
+        <p-button label="Nuovo ruolo" icon="pi pi-plus" (onClick)="onNew()" />
+    </div>
+
+    <p-card styleClass="table-card">
+        <p-table [value]="roles()" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+            [showCurrentPageReport]="true" currentPageReportTemplate="{first} - {last} di {totalRecords} ruoli"
+            styleClass="clean-table">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nome</th>
+                    <th>Descrizione</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-role>
+                <tr class="row-hoverable" (click)="onView(role)">
+                    <td>{{ role.name }}</td>
+                    <td class="text-secondary">{{ role.description || '—' }}</td>
+                    <td class="col-actions" (click)="$event.stopPropagation()">
+                        <button class="icon-btn" (click)="onView(role)" title="Modifica">
+                            <i class="pi pi-pencil"></i>
+                        </button>
+                        <button class="icon-btn icon-btn--danger" (click)="onDelete(role)" title="Elimina">
+                            <i class="pi pi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="3" class="empty-state">
+                        <i class="pi pi-id-card empty-state__icon"></i>
+                        <p>Nessun ruolo ancora definito</p>
+                    </td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </p-card>
+</div>

@@ -1,0 +1,104 @@
+  .requirement-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+  }
+
+  .requirement-card__role {
+      font-size: 16px;
+      font-weight: 600;
+  }
+
+  .requirement-card__qty {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-left: 8px;
+  }
+
+  .requirement-card__competencies {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-border);
+  }
+
+  .requirement-card__add-competency {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-border);
+  }
+
+  .editable-tag {
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+  }
+
+  .editable-tag:hover {
+      opacity: 0.75;
+  }
+
+  .inline-form--compact {
+      gap: 8px;
+      align-items: end;
+  }
+
+  .generate-btn {
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #0071e3, #5e5ce6);
+  }
+
+  .team-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f0f2;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+  }
+
+  .team-row:last-child {
+      border-bottom: none;
+  }
+
+  .team-row:hover {
+      opacity: 0.7;
+  }
+
+  .team-row__label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+  }
+
+  .team-row__score {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-accent);
+  }
+
+  .team-exists-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      background: #f0f7ff;
+      border-radius: 12px;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+  }
+
+  .team-exists-notice i {
+      color: var(--color-accent);
+  }
+
+  .status-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+  }

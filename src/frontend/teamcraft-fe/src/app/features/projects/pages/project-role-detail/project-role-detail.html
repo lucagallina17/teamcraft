@@ -1,0 +1,34 @@
+<div class="page">
+    <div class="page__header page__header--stacked">
+        <button class="back-link" (click)="onCancel()">
+            <i class="pi pi-chevron-left"></i> Ruoli
+        </button>
+        <h1>{{ isNew() ? 'Nuovo ruolo' : 'Modifica ruolo' }}</h1>
+    </div>
+
+    <p-card styleClass="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="form">
+            <div class="form__grid">
+                <div class="field field--full">
+                    <label for="name">Nome ruolo</label>
+                    <input pInputText id="name" formControlName="name" placeholder="Es. Tech Lead" />
+                    @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                    <span class="field__error">Il nome è obbligatorio</span>
+                    }
+                </div>
+
+                <div class="field field--full">
+                    <label for="description">Descrizione</label>
+                    <input pInputText id="description" formControlName="description" placeholder="Opzionale" />
+                </div>
+            </div>
+
+            <div class="form__actions">
+                <p-button type="submit" label="Salva" [disabled]="form.invalid" />
+                @if (!isNew()) {
+                <button type="button" class="btn-danger-text" (click)="onDelete()">Elimina ruolo</button>
+                }
+            </div>
+        </form>
+    </p-card>
+</div>

@@ -1,0 +1,47 @@
+<div class="page">
+    <div class="page__header">
+        <div>
+            <h1>Affinità tra colleghi</h1>
+            <p class="page__subtitle">Coppie di dipendenti che hanno già lavorato insieme in un team</p>
+        </div>
+    </div>
+
+    @if (pairs().length === 0) {
+    <div class="empty-state">
+        <i class="pi pi-users empty-state__icon"></i>
+        <p>Nessuna coppia di colleghi ancora registrata — l'affinità si sblocca dopo il primo team condiviso</p>
+    </div>
+    }
+
+    <div class="pairs-grid">
+        @for (pair of pairs(); track pair.employee1Id + pair.employee2Id) {
+        <p-card styleClass="pair-card">
+            <div class="pair-card__names">
+                <span>{{ pair.employee1Name }}</span>
+                <i class="pi pi-arrow-right-arrow-left"></i>
+                <span>{{ pair.employee2Name }}</span>
+            </div>
+
+            @if (editingPairId() === pair.employee1Id + pair.employee2Id) {
+            <form [formGroup]="affinityForm" (ngSubmit)="onSaveAffinity(pair)" class="pair-card__edit">
+                <p-inputNumber formControlName="score" [min]="1" [max]="5" placeholder="Punteggio 1-5" />
+                <p-button type="submit" icon="pi pi-check" [disabled]="affinityForm.invalid" />
+                <button type="button" class="icon-btn" (click)="editingPairId.set(null)">
+                    <i class="pi pi-times"></i>
+                </button>
+            </form>
+            } @else {
+            <div class="pair-card__status" (click)="onStartEdit(pair)">
+                @if (pair.hasAffinityDefined) {
+                <p-tag [value]="statusLabel(pair.status) + ' · ' + pair.score"
+                    [severity]="statusSeverity(pair.status)" />
+                } @else {
+                <p-tag value="Non definita" severity="secondary" />
+                }
+                <span class="edit-hint">Modifica</span>
+            </div>
+            }
+        </p-card>
+        }
+    </div>
+</div>

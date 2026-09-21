@@ -1,0 +1,58 @@
+  .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+  }
+
+  .role-card .p-card-body {
+      padding: 18px 20px;
+  }
+
+  .role-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+  }
+
+  .role-card__actions {
+      display: flex;
+      gap: 4px;
+  }
+
+  .role-card__name {
+      font-size: 15px;
+      font-weight: 600;
+  }
+
+  .role-card__description {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+  }
+
+  .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+  }
+
+  .edit-form input {
+      font-family: var(--font-family);
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+  }
+
+  .edit-form__actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+  }
+
+  @media (max-width: 640px) {
+      .roles-grid {
+          grid-template-columns: 1fr;
+      }
+  }

@@ -1,0 +1,51 @@
+<div class="page page--extra-wide">
+    <div class="page__header">
+        <button class="back-link" (click)="onBack()">
+            <i class="pi pi-chevron-left"></i> Progetto
+        </button>
+        <h1>Proposte di team</h1>
+        <p class="page__subtitle">
+            Tre composizioni generate in base alle competenze richieste e all'affinità tra i dipendenti
+        </p>
+    </div>
+
+    @if (proposals().length === 0) {
+    <div class="empty-state">
+        <i class="pi pi-users empty-state__icon"></i>
+        <p>Non ci sono candidati sufficienti per generare una proposta completa</p>
+    </div>
+    }
+
+    <div class="proposals-grid">
+        @for (proposal of proposals(); track proposal.proposalId; let i = $index) {
+        <p-card styleClass="proposal-card">
+            <div class="proposal-card__header">
+                <span class="proposal-card__rank">Proposta {{ i + 1 }}</span>
+                @if (!proposal.isComplete) {
+                <p-tag value="Incompleta" severity="warn" />
+                }
+            </div>
+
+            <div class="proposal-card__score">
+                <span class="score-value">{{ proposal.totalScore }}</span>
+                <span class="score-label">punteggio</span>
+            </div>
+
+            <div class="proposal-card__members">
+                @for (member of proposal.members; track member.employeeId) {
+                <div class="member-row">
+                    <div>
+                        <div class="member-row__name">{{ member.fullName }}</div>
+                        <div class="member-row__role">{{ member.roleName }}</div>
+                    </div>
+                    <span class="member-row__score">{{ member.competencyScore }}</span>
+                </div>
+                }
+            </div>
+
+            <p-button label="Seleziona questo team" styleClass="full-width" [disabled]="!proposal.isComplete"
+                (onClick)="onSelect(proposal)" />
+        </p-card>
+        }
+    </div>
+</div>

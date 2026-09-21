@@ -1,0 +1,236 @@
+<div class="page">
+    <div class="page__header page__header--stacked">
+        <button class="back-link" (click)="onCancel()">
+            <i class="pi pi-chevron-left"></i> Progetti
+        </button>
+        <h1>{{ isNew() ? 'Nuovo progetto' : project()?.name }}</h1>
+
+        @if (!isNew() && project()) {
+        <div class="status-row">
+            <p-tag [value]="project()!.status" />
+            @for (nextStatus of allowedNextStatuses(); track nextStatus) {
+            <button class="text-btn" (click)="onChangeStatus(nextStatus)">
+                → {{ projectStatusLabel(nextStatus) }}
+            </button>
+            }
+        </div>
+        }
+    </div>
+
+    <p-card styleClass="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="form">
+            <div class="form__grid">
+                <div class="field field--full">
+                    <label>Nome progetto</label>
+                    <input pInputText formControlName="name" />
+                    @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                    <span class="field__error">Il nome è obbligatorio</span>
+                    }
+                </div>
+
+                <div class="field field--full">
+                    <label>Descrizione</label>
+                    <input pInputText formControlName="description" />
+                </div>
+
+                <div class="field">
+                    <label>Data inizio</label>
+                    <input pInputText type="date" formControlName="startDate" />
+                </div>
+
+                <div class="field">
+                    <label>Data fine</label>
+                    <input pInputText type="date" formControlName="endDate" />
+                </div>
+            </div>
+
+            <div class="form__actions">
+                <p-button type="submit" label="Salva modifiche" [disabled]="form.invalid" />
+                @if (!isNew() && project()?.status === 'Draft') {
+                <button type="button" class="btn-danger-text" (click)="onDelete()">Elimina progetto</button>
+                }
+            </div>
+        </form>
+    </p-card>
+
+    @if (!isNew() && project()) {
+    <div class="section">
+        <div class="section__header">
+            <h2>Teams</h2>
+        </div>
+
+        @if (teams().length === 0) {
+        <p class="text-secondary">Nessun team ancora creato per questo progetto</p>
+        } @else {
+        <p-card>
+            @for (team of teams(); track team.id) {
+            <div class="team-row" (click)="onViewTeam(team.id)">
+                <div>
+                    <div class="team-row__label">Team del {{ team.createdAt | date:'dd MMM yyyy' }}</div>
+                    <p-tag [value]="statusLabel(team.status)" [severity]="statusSeverity(team.status)" />
+                </div>
+                <div class="team-row__score">{{ team.score }}</div>
+            </div>
+            }
+        </p-card>
+        }
+    </div>
+
+    <div class="section">
+        <div class="section__header">
+            <h2>Ruoli richiesti</h2>
+            @if (canGenerateTeam()) {
+            <button class="text-btn" (click)="showAddRequirement.set(!showAddRequirement())">
+                {{ showAddRequirement() ? 'Annulla' : '+ Aggiungi ruolo' }}
+            </button>
+            }
+        </div>
+
+        @if (showAddRequirement()) {
+        <p-card styleClass="inline-form-card">
+            <form [formGroup]="requirementForm" (ngSubmit)="onAddRequirement()"
+                class="inline-form inline-form--compact">
+                <div class="field field--half">
+                    <label for="project-role-id">Ruolo</label>
+                    <p-select inputId="project-role-id" [options]="roles()" optionLabel="name" optionValue="id"
+                        formControlName="projectRoleId" />
+                </div>
+
+                <div class="field field--half">
+                    <label for="project-role-quantity">Quantita</label>
+                    <p-inputNumber inputId="project-role-quantity" formControlName="quantity" [min]="1" />
+                </div>
+
+                <p-button type="submit" label="Aggiungi" [disabled]="requirementForm.invalid" />
+            </form>
+        </p-card>
+        }
+
+        @if (project()!.roleRequirements.length === 0) {
+        <p class="text-secondary">Nessun ruolo ancora aggiunto per questo progetto</p>
+        } @else {
+        @for (req of project()!.roleRequirements; track req.id) {
+        <p-card styleClass="requirement-card">
+            <div class="requirement-card__header">
+                <div>
+                    <span class="requirement-card__role">{{ req.roleName }}</span>
+                    <span class="requirement-card__qty">× {{ req.quantity }}</span>
+                </div>
+                @if (canGenerateTeam()) {
+                <button class="icon-btn icon-btn--danger" (click)="onRemoveRequirement(req.id)">
+                    <i class="pi pi-trash"></i>
+                </button>
+                }
+            </div>
+
+            @if (req.competencies.length > 0) {
+            <div class="requirement-card__competencies">
+                @for (comp of req.competencies; track comp.id) {
+                @if (editingCompetencyId() === comp.id) {
+                <form [formGroup]="competencyForm" (ngSubmit)="onUpdateCompetency(comp.id) "
+                    class="inline-form inline-form--compact">
+                    <div class="field">
+                        <label>Livello minimo</label>
+                        <p-inputNumber [inputId]="'edit-minimum-level-' + comp.id" formControlName="minimumLevel"
+                            [min]="1" [max]="5" />
+                    </div>
+
+                    <div class="field">
+                        <label>Peso</label>
+                        <p-inputNumber [inputId]="'edit-weight-' + comp.id" formControlName="weight" [min]="1" [max]="5"
+                            [step]="1" />
+                    </div>
+
+                    <div class="field">
+                        <label>Tipo requisito</label>
+                        <p-select [inputId]="'edit-requirement-type-' + comp.id" [options]="requirementTypes"
+                            optionLabel="label" optionValue="value" formControlName="requirementType" />
+                    </div>
+
+                    <p-button type="submit" icon="pi pi-check" [disabled]="competencyForm.invalid" />
+                    <button type="button" class="icon-btn" (click)="editingCompetencyId.set(null)">
+                        <i class="pi pi-times"></i>
+                    </button>
+
+                </form>
+                } @else {
+                @if (canGenerateTeam()) {
+                <p-tag [value]="comp.competencyName + ' ≥ ' + comp.minimumLevel + ' (peso ' + comp.weight + ')'"
+                    [severity]="comp.requirementType === 'Required' ? 'danger' : 'info'" styleClass="editable-tag"
+                    (click)="onStartEditCompetency(comp)" />
+                }@else {
+                <p-tag [value]="comp.competencyName + ' ≥ ' + comp.minimumLevel + ' (peso ' + comp.weight + ')'"
+                    [severity]="comp.requirementType === 'Required' ? 'danger' : 'info'" />
+                }
+                }
+                }
+            </div>
+            }
+
+            @if (canGenerateTeam()) {
+            <div class="requirement-card__add-competency">
+                @if (activeRequirementId() === req.id) {
+                <form [formGroup]="competencyForm" (ngSubmit)="onAddCompetency(req.id)" class="form">
+                    <div class="form__grid">
+
+                        <div class="field">
+                            <label>Competenza</label>
+                            <p-select inputId="competency" [options]="competencies()" optionLabel="name"
+                                optionValue="id" formControlName="competencyId" />
+                        </div>
+                        <div class="field">
+                            <label>Livello minimo</label>
+                            <p-inputNumber [inputId]="'add-minimum-level-' + req.id" formControlName="minimumLevel"
+                                [min]="1" [max]="5" />
+                        </div>
+                        <div class="field">
+                            <label>Peso</label>
+                            <p-inputNumber [inputId]="'add-weight-' + req.id" formControlName="weight" [min]="0.1"
+                                [max]="5" [step]="0.1" />
+                        </div>
+                        <div class="field">
+                            <label>Tipo requisito</label>
+                            <p-select [inputId]="'add-requirement-type-' + req.id" [options]="requirementTypes"
+                                optionLabel="label" optionValue="value" formControlName="requirementType" />
+                        </div>
+                    </div>
+
+                    <div class="form__actions">
+                        <p-button label="Annulla" icon="pi pi-times" (onClick)="this.activeRequirementId.set(null);" />
+                        <p-button type="submit" label="Aggiungi" icon="pi pi-check"
+                            [disabled]="competencyForm.invalid" />
+                    </div>
+
+                </form>
+                } @else {
+                <button class="text-btn" (click)="activeRequirementId.set(req.id)">
+                    + Aggiungi competenza richiesta
+                </button>
+                }
+            </div>
+            }
+        </p-card>
+        }
+        }
+
+        @if (project()!.roleRequirements.length > 0) {
+        @if (canGenerateTeam()) {
+        <p-button label="Genera proposte di team" icon="pi pi-sparkles" styleClass="generate-btn"
+            (onClick)="onGenerateTeam()" />
+        } @else if (project()!.status === 'Completed' || project()!.status === 'Cancelled') {
+        <div class="team-exists-notice">
+            <i class="pi pi-lock"></i>
+            <span>Il progetto è {{ project()!.status === 'Completed' ? 'completato' : 'annullato' }} — non è possibile
+                generare nuovi team.</span>
+        </div>
+        } @else {
+        <div class="team-exists-notice">
+            <i class="pi pi-info-circle"></i>
+            <span>Questo progetto ha già un team {{ activeTeamStatusLabel() }}. Chiudi il team corrente per generarne
+                uno nuovo.</span>
+        </div>
+        }
+        }
+    </div>
+    }
+</div>

@@ -1,0 +1,48 @@
+<div class="page">
+    <div class="page__header page__header--stacked">
+        <button class="back-link" (click)="onBack()">
+            <i class="pi pi-chevron-left"></i> {{ backLabel() }}
+        </button>
+        <h1>Team {{ team()?.projectName }}</h1>
+        @if (team()) {
+        <p-tag [value]="statusLabel(team()!.status)" [severity]="statusSeverity(team()!.status)" />
+        }
+    </div>
+
+    @if (team()) {
+    <p-card>
+        <div class="team-summary">
+            <div class="team-summary__score">
+                <span class="score-value">{{ team()!.score }}</span>
+                <span class="score-label">punteggio complessivo</span>
+            </div>
+            <div class="team-summary__meta">
+                <span class="text-secondary">Creato il {{ team()!.createdAt | date:'dd MMM yyyy' }}</span>
+            </div>
+        </div>
+
+        @if (nextStatus(); as next) {
+        <p-button [label]="'Passa a: ' + statusLabel(next)" styleClass="full-width" (onClick)="onAdvanceStatus(next)" />
+        }
+    </p-card>
+
+    <div class="section">
+        <h2>Membri del team</h2>
+        <p-card>
+            @for (member of team()!.members; track member.id) {
+            <div class="member-row">
+                <div>
+                    <div class="member-row__name">{{ member.fullName }}</div>
+                    <div class="member-row__role">{{ member.roleName }}</div>
+                </div>
+                @if(team()!.status !== 'Closed') {
+                <button class="icon-btn icon-btn--danger" (click)="onRemoveMember(member.employeeId, member.fullName)">
+                    <i class="pi pi-trash"></i>
+                </button>
+                }
+            </div>
+            }
+        </p-card>
+    </div>
+    }
+</div>

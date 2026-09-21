@@ -1,0 +1,157 @@
+<div class="page">
+    <div class="page__header">
+        <button class="back-link" (click)="onCancel()">
+            <i class="pi pi-chevron-left"></i> Dipendenti
+        </button>
+        <h1>{{ isNew() ? 'Nuovo dipendente' : employee()?.firstName + ' ' + employee()?.lastName }}</h1>
+        <p class="page__subtitle">
+            {{ isNew() ? 'Inserisci i dati del nuovo dipendente' : employee()?.email }}
+        </p>
+    </div>
+
+    <p-card styleClass="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="form">
+            <div class="form__grid">
+                <div class="field">
+                    <label for="firstName">Nome</label>
+                    <input pInputText id="firstName" formControlName="firstName" />
+                    @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+                    <span class="field__error">Il nome è obbligatorio</span>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="lastName">Cognome</label>
+                    <input pInputText id="lastName" formControlName="lastName" />
+                    @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+                    <span class="field__error">Il cognome è obbligatorio</span>
+                    }
+                </div>
+
+                <div class="field field--full">
+                    <label for="email">Email</label>
+                    <input pInputText id="email" formControlName="email" />
+                    @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                    <span class="field__error">Inserisci un indirizzo email valido</span>
+                    }
+                </div>
+            </div>
+
+            <div class="form__actions">
+                <p-button type="submit" label="Salva modifiche" [disabled]="form.invalid" />
+
+                @if (!isNew()) {
+                <button type="button" class="btn-danger-text" (click)="onDelete()">
+                    Elimina dipendente
+                </button>
+                }
+            </div>
+        </form>
+    </p-card>
+
+    @if (!isNew() && employee()) {
+    <div class="section">
+        <div class="section__header">
+            <h2>Competenze</h2>
+            <button class="text-btn" (click)="showAddCompetency.set(!showAddCompetency())">
+                {{ showAddCompetency() ? 'Annulla' : '+ Aggiungi competenza' }}
+            </button>
+        </div>
+
+        @if (showAddCompetency()) {
+        <p-card styleClass="inline-form-card">
+            <form [formGroup]="competencyForm" (ngSubmit)="onAddCompetency()" class="form">
+                <div class="form__grid">
+                    <div class="field">
+                        <label>Competenza</label>
+                        <p-select [options]="allCompetencies()" optionLabel="name" optionValue="id"
+                            formControlName="competencyId" />
+                    </div>
+
+                    <div class="field">
+                        <label>Livello</label>
+                        <p-inputNumber formControlName="level" [min]="1" [max]="5" />
+                    </div>
+
+                    <div class="field">
+                        <label>Fonte</label>
+                        <p-select [options]="sources" optionLabel="label" optionValue="value"
+                            formControlName="source" />
+                    </div>
+
+                    <div class="field">
+                        <label>Data</label>
+                        <input pInputText type="date" formControlName="date" />
+                    </div>
+                </div>
+
+                <div class="form__actions">
+                    <p-button type="submit" label="Aggiungi" [disabled]="competencyForm.invalid" />
+                </div>
+
+            </form>
+        </p-card>
+        }
+
+        <p-card>
+            <p-table [value]="employee()!.competencies" styleClass="clean-table">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Competenza</th>
+                        <th>Tipo</th>
+                        <th>Livello</th>
+                        <th>Fonte</th>
+                        <th>Data</th>
+                        <th class="col-actions"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-competency>
+                    <tr>
+                        <td>{{ competency.competencyName }}</td>
+                        <td><p-tag [value]="competency.competencyType"
+                                [severity]="competency.competencyType === 'Technical' ? 'info' : 'success'" /></td>
+                        <td>{{ competency.level }} / 5</td>
+                        <td class="text-secondary">{{ competency.source }}</td>
+                        <td class="text-secondary">{{ competency.date | date:'dd MMM yyyy' }}</td>
+                        <td class="col-actions">
+                            <button class="icon-btn icon-btn--danger" (click)="onRemoveCompetency(competency.id)">
+                                <i class="pi pi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="empty-state">Nessuna competenza registrata per questo dipendente</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+
+    <div class="section">
+        <div class="section__header">
+            <h2>Storico team</h2>
+        </div>
+
+        <p-card>
+            @if (employee()!.teamHistory.length === 0) {
+            <p class="text-secondary">Nessun team ancora assegnato a questo dipendente</p>
+            } @else {
+            @for (entry of employee()!.teamHistory; track entry.teamId) {
+            <div class="team-history-row" (click)="onViewTeam(entry.teamId)">
+                <div>
+                    <div class="team-history-row__project">{{ entry.projectName }}</div>
+                    <div class="team-history-row__role">{{ entry.roleName }}</div>
+                </div>
+                <div class="team-history-row__meta">
+                    <p-tag [value]="statusLabel(entry.teamStatus)" [severity]="statusSeverity(entry.teamStatus)" />
+                    <span class="text-secondary">{{ entry.teamCreatedAt | date:'dd MMM yyyy' }}</span>
+                </div>
+            </div>
+            }
+            }
+        </p-card>
+    </div>
+    }
+</div>

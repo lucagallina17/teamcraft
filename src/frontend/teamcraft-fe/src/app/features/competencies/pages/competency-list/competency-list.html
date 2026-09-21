@@ -1,0 +1,50 @@
+<div class="page">
+    <div class="page__header">
+        <div>
+            <h1>Competenze</h1>
+            <p class="page__subtitle">{{ competencies().length }} {{ competencies().length == 1 ? 'competenza' :
+                'competenze'}} in azienda</p>
+        </div>
+        <p-button label="Nuova competenza" icon="pi pi-plus" (onClick)="onNew()" />
+    </div>
+
+    <p-card styleClass="table-card">
+        <p-table [value]="competencies()" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+            [showCurrentPageReport]="true" currentPageReportTemplate="{first} - {last} di {totalRecords} dipendenti"
+            styleClass="clean-table">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-competency>
+                <tr class="row-hoverable" (click)="onView(competency)">
+                    <td>{{ competency.name }}</td>
+                    <td>{{ competency.type }}</td>
+                    <td class="col-actions" (click)="$event.stopPropagation()">
+                        <button class="icon-btn" (click)="onView(competency)" title="Modifica">
+                            <i class="pi pi-pencil"></i>
+                        </button>
+                        <button class="icon-btn icon-btn--danger" (click)="onDelete(competency)" title="Elimina">
+                            <i class="pi pi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="4" class="empty-state">
+                        <i class="pi pi-users empty-state__icon"></i>
+                        <p>Nessuna competenza ancora registrato</p>
+                    </td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </p-card>
+</div>
