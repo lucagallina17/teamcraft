@@ -74,7 +74,7 @@ Domain non conosce nessun altro livello. Eccezioni di dominio (`DomainRuleViolat
 - **Autenticazione JWT completa incluso `[Authorize]`** (2026-09-23/24) — login, registrazione per email propria, interceptor con redirect a `/login` su 401, route guard FE. `CreatedBy` su `Project` preso dal claim `sub`, non più placeholder.
 - Test: xUnit su `TeamAggregate`, `TeamReviewAggregate`, `ActivateTeamCommandHandler`, `SubmitTeamReviewCommandHandler`. 9/9 verdi.
 - Git: storia riscritta il 2026-09-21 (rimossi ID subscription). Tutto il lavoro JWT + recensione committato e pushato (2026-09-24), inclusi i file rimasti fuori dallo split iniziale (`TeamsController.cs`, `styles.scss`). Locale allineato a `origin/main`.
-- **Deploy Azure aggiornato al 2026-09-24**: backend ripubblicato con JWT + `[Authorize]` + recensione. Il primo deploy dava 500 su tutto perché `Jwt__Key` non era mai stato messo nelle App Settings Azure — risolto. **Bootstrap ancora aperto**: `[Authorize]` su `EmployeesController` impedisce di creare il primo `Employee` via API senza essere già autenticati, e non ci si può autenticare senza un `Employee` esistente. In corso: inserire il primo `Employee` a mano via Query editor SQL, poi registrarsi normalmente (endpoint di registrazione resta pubblico apposta).
+- **Deploy Azure aggiornato al 2026-09-24**: backend ripubblicato con JWT + `[Authorize]` + recensione. Il primo deploy dava 500 su tutto perché `Jwt__Key` non era mai stato messo nelle App Settings Azure — risolto. **Bootstrap completato**: `[Authorize]` su `EmployeesController` impediva di creare il primo `Employee` via API senza essere già autenticati; risolto inserendo il primo `Employee` a mano via Query editor SQL, poi registrazione normale dal sito (endpoint di registrazione resta pubblico apposta).
 
 ## Modalità di collaborazione (preferenza di Luca)
 
@@ -86,11 +86,10 @@ Bracketed paste nel terminale bash: `bind 'set enable-bracketed-paste off'`.
 
 ## Prossimi passi
 
-1. **Bootstrap Azure**: inserire il primo `Employee` via SQL (colonne della tabella già controllate), poi registrarsi dal sito.
-2. Cancellare le risorse del vecchio account Azure (RG, SQL, App Service) per non consumare credito.
-3. Valutare il rename di `UserAccount.Role` (collide con `ProjectRole`) quando si costruisce un vero sistema di ruoli applicativi.
-4. CI/CD anche per il backend (oggi publish manuale da Visual Studio).
-5. Rivalutare il target framework prima di novembre 2026 (fine supporto .NET 8 LTS) — probabile .NET 10.
-6. Valutare se estendere DDD a `Project` (oggi anemico, nessuna protezione di dominio sullo `Status`).
-7. Pulizia: cartella scaffold residua `TeamCraft.API/`; `ai_output_audit.md` dice ancora ".NET 7". Opzionale: rimuovere le cached views dei vecchi commit Git.
-8. Notifiche/toast: copertura errori sugli endpoint TeamReview. Budget bundle Angular in warning (702 kB vs 500 kB).
+1. Cancellare le risorse del vecchio account Azure (RG, SQL, App Service) per non consumare credito.
+2. Valutare il rename di `UserAccount.Role` (collide con `ProjectRole`) quando si costruisce un vero sistema di ruoli applicativi.
+3. CI/CD anche per il backend (oggi publish manuale da Visual Studio).
+4. Rivalutare il target framework prima di novembre 2026 (fine supporto .NET 8 LTS) — probabile .NET 10.
+5. Valutare se estendere DDD a `Project` (oggi anemico, nessuna protezione di dominio sullo `Status`).
+6. Pulizia: cartella scaffold residua `TeamCraft.API/`; `ai_output_audit.md` dice ancora ".NET 7". Opzionale: rimuovere le cached views dei vecchi commit Git.
+7. Notifiche/toast: copertura errori sugli endpoint TeamReview. Budget bundle Angular in warning (702 kB vs 500 kB).
