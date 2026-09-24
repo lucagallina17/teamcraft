@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamCraft.Application.Commands;
 using TeamCraft.Application.DTOs.Team;
@@ -22,6 +23,7 @@ public class TeamsController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TeamDto>>> GetByProject(Guid projectId)
     {
@@ -29,6 +31,7 @@ public class TeamsController : ControllerBase
         return Ok(teams);
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<TeamDto>> GetById(Guid projectId, Guid id)
     {
@@ -40,6 +43,7 @@ public class TeamsController : ControllerBase
     }
 
     /// Genera 3 proposte di team basate su competenze e affinità — non salva nulla
+    [Authorize]
     [HttpGet("proposals")]
     public async Task<ActionResult<List<TeamProposalDto>>> GetProposals(Guid projectId)
     {
@@ -48,6 +52,7 @@ public class TeamsController : ControllerBase
     }
 
     /// Salva la proposta scelta dall'HR come team effettivo
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<TeamDto>> Create(Guid projectId, [FromBody] CreateTeamFromProposalDto dto)
     {
@@ -55,6 +60,7 @@ public class TeamsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { projectId, id = team.Id }, team);
     }
 
+    [Authorize]
     [HttpPut("{id}/status")]
     public async Task<ActionResult<TeamDto>> UpdateStatus(Guid projectId, Guid id, [FromBody] UpdateTeamStatusDto dto)
     {
@@ -75,11 +81,20 @@ public class TeamsController : ControllerBase
         return Ok(team);
     }
 
+    [Authorize]
     [HttpDelete("{id}/employees/{employeeId}")]
     public async Task<ActionResult<TeamDto>> RemoveMember(Guid projectId, Guid id, Guid employeeId)
     {
         var team = await _teamService.RemoveMemberAsync(id, employeeId);
         if (team == null) return NotFound();
         return Ok(team);
+    }
+
+    [Authorize]
+    [HttpPost("{id}/review")]
+    public async Task<ActionResult<TeamReviewDto>> SubmitReview(Guid projectId, Guid id, [FromBody] SubmitTeamReviewDto dto) 
+    {
+        var result = await _mediator.Send(new SubmitTeamReview(id, dto.Score, dto.Description));
+        return Ok(result);
     }
 }
