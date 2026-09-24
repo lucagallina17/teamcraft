@@ -40,7 +40,7 @@ export class TeamDetail {
   readonly statusLabel = teamStatusLabel;
   readonly statusSeverity = teamStatusSeverity;
 
-  team = signal<TeamDto | null>(null);
+  team = signal<TeamDto | null>(this.route.snapshot.data['team']);
 
   private readonly statusOrder: TeamStatus[] = [
     TeamStatus.Proposed, TeamStatus.Active, TeamStatus.Closed
@@ -50,16 +50,6 @@ export class TeamDetail {
     score: [0, [Validators.required, Validators.min(1), Validators.max(5)]],
     description: ['', [Validators.required, Validators.minLength(10)]]
   });
-
-  constructor() {
-    this.loadTeam();
-  }
-
-  private loadTeam(): void {
-    this.teamService.getById(this.projectId, this.teamId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: (data) => this.team.set(data) });
-  }
 
   nextStatus(): TeamStatus | null {
     const current = this.team()?.status as TeamStatus;

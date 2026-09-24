@@ -22,15 +22,7 @@ export class TeamProposals {
 
     private readonly projectId = this.route.snapshot.paramMap.get('projectId')!;
 
-    proposals = signal<TeamProposalDto[]>([]);
-
-    constructor() {
-        this.teamService.getProposals(this.projectId)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: (data) => this.proposals.set(data)
-            });
-    }
+    proposals = signal<TeamProposalDto[]>(this.route.snapshot.data['proposals']);
 
     onSelect(proposal: TeamProposalDto): void {
         const dto = {

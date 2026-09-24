@@ -6,6 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ProjectRoleService } from '../../project-role.service';
+import { ProjectRoleDto } from '../../project-role.model';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
 
@@ -26,31 +27,15 @@ export class ProjectRoleDetail {
   private readonly notificationService = inject(NotificationService);
 
   private readonly id = this.route.snapshot.paramMap.get('id')!;
+  private readonly resolvedRole: ProjectRoleDto | null = this.route.snapshot.data['role'];
 
-  isNew = signal<boolean>(this.id === 'new');
-  roleName = signal<string>('');
+  isNew = signal<boolean>(this.resolvedRole === null);
+  roleName = signal<string>(this.resolvedRole?.name ?? '');
 
   form = this.fb.group({
-    name: ['', Validators.required],
-    description: ['']
+    name: [this.resolvedRole?.name ?? '', Validators.required],
+    description: [this.resolvedRole?.description ?? '']
   });
-
-  constructor() {
-    if (!this.isNew()) {
-      this.loadRole();
-    }
-  }
-
-  private loadRole(): void {
-    this.projectRoleService.getById(this.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.roleName.set(data.name);
-          this.form.patchValue({ name: data.name, description: data.description });
-        }
-      });
-  }
 
   onSave(): void {
     if (this.form.invalid) {

@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -19,17 +19,14 @@ import { NotificationService } from '../../../../shared/services/notification.se
   styleUrls: ['./employee-list.scss']
 })
 export class EmployeeList {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly confirmService = inject(ConfirmService);
   private readonly employeeService = inject(EmployeeService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly notificationService = inject(NotificationService);
 
-  employees = signal<EmployeeDto[]>([]);
-
-  constructor() {
-    this._loadEmployees();
-  }
+  employees = signal<EmployeeDto[]>(this.route.snapshot.data['employees']);
 
   private _loadEmployees(): void {
     this.employeeService.getAll()

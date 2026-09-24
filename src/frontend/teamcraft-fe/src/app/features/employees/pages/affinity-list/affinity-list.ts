@@ -1,5 +1,6 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -17,21 +18,18 @@ import { NotificationService } from '../../../../shared/services/notification.se
     styleUrls: ['./affinity-list.scss']
 })
 export class AffinityList {
+    private readonly route = inject(ActivatedRoute);
     private readonly affinityService = inject(AffinityService);
     private readonly fb = inject(FormBuilder);
     private readonly destroyRef = inject(DestroyRef);
     private readonly notificationService = inject(NotificationService);
 
-    pairs = signal<ColleaguePairDto[]>([]);
+    pairs = signal<ColleaguePairDto[]>(this.route.snapshot.data['pairs']);
     editingPairId = signal<string | null>(null);
 
     affinityForm = this.fb.group({
         score: [1, [Validators.required, Validators.min(1), Validators.max(5)]]
     });
-
-    constructor() {
-        this.loadPairs();
-    }
 
     private loadPairs(): void {
         this.affinityService.getColleagues()

@@ -5,7 +5,7 @@ import { CardModule } from 'primeng/card';
 import { ProjectRoleService } from '../../project-role.service';
 import { ProjectRoleDto } from '../../project-role.model';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { NotificationService } from '../../../../shared/services/notification.service';
 
@@ -17,17 +17,14 @@ import { NotificationService } from '../../../../shared/services/notification.se
     styleUrls: ['./project-role-list.scss']
 })
 export class ProjectRoleList {
+    private readonly route = inject(ActivatedRoute);
     private readonly projectRoleService = inject(ProjectRoleService);
     private readonly router = inject(Router);
     private readonly confirmService = inject(ConfirmService);
     private readonly destroyRef = inject(DestroyRef);
     private readonly notificationService = inject(NotificationService);
 
-    roles = signal<ProjectRoleDto[]>([]);
-
-    constructor() {
-        this.loadRoles();
-    }
+    roles = signal<ProjectRoleDto[]>(this.route.snapshot.data['roles']);
 
     private loadRoles(): void {
         this.projectRoleService.getAll()

@@ -3,7 +3,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { CompetencyDto } from '../../competency.model';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { concatMap } from 'rxjs';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
 import { CompetencyService } from '../../competency.service';
@@ -17,17 +17,14 @@ import { NotificationService } from '../../../../shared/services/notification.se
   styleUrl: './competency-list.scss',
 })
 export class CompetencyList {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly confirmService = inject(ConfirmService);
   private readonly competencyService = inject(CompetencyService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly notificationService = inject(NotificationService);
 
-  competencies = signal<CompetencyDto[]>([]);
-
-  constructor() {
-    this._loadCompetencies();
-  }
+  competencies = signal<CompetencyDto[]>(this.route.snapshot.data['competencies']);
 
   private _loadCompetencies(): void {
     this.competencyService.getAll()

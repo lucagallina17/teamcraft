@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -20,17 +20,14 @@ import { NotificationService } from '../../../../shared/services/notification.se
   styleUrls: ['./project-list.scss']
 })
 export class ProjectList {
+  private readonly route = inject(ActivatedRoute);
   private readonly projectService = inject(ProjectService);
   private readonly router = inject(Router);
   private readonly confirmService = inject(ConfirmService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly notificationService = inject(NotificationService);
 
-  projects = signal<ProjectDto[]>([]);
-
-  constructor() {
-    this.loadProjects();
-  }
+  projects = signal<ProjectDto[]>(this.route.snapshot.data['projects']);
 
   private loadProjects(): void {
     this.projectService.getAll()

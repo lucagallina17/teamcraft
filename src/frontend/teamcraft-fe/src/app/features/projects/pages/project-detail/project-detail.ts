@@ -9,14 +9,11 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { ProjectService } from '../../project.service';
-import { ProjectRoleService } from '../../project-role.service';
 import { AddRequirementCompetencyDto, ProjectDetailDto, RequirementType } from '../../project.model';
 import { ProjectRoleDto } from '../../project-role.model';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
 import { COMMON_PIPES } from '../../../../shared/common-imports';
 import { CompetencyDto } from '../../../competencies/competency.model';
-import { CompetencyService } from '../../../competencies/competency.service';
-import { TeamService } from '../../../teams/team.service';
 import { TeamDto } from '../../../teams/team.model';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { teamStatusLabel, teamStatusSeverity } from '../../../../shared/utils/status.utils';
@@ -35,24 +32,21 @@ export class ProjectDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly projectService = inject(ProjectService);
-  private readonly projectRoleService = inject(ProjectRoleService);
   private readonly confirmService = inject(ConfirmService);
-  private readonly competencyService = inject(CompetencyService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly id = this.route.snapshot.paramMap.get('id')!;
-  private readonly teamService = inject(TeamService);
   private readonly notificationService = inject(NotificationService);
 
   readonly statusLabel = teamStatusLabel;
   readonly statusSeverity = teamStatusSeverity;
 
-  teams = signal<TeamDto[]>([]);
-  project = signal<ProjectDetailDto | null>(null);
-  roles = signal<ProjectRoleDto[]>([]);
-  isNew = signal<boolean>(this.id === 'new');
+  teams = signal<TeamDto[]>(this.route.snapshot.data['teams']);
+  project = signal<ProjectDetailDto | null>(this.route.snapshot.data['project']);
+  roles = signal<ProjectRoleDto[]>(this.route.snapshot.data['roles']);
+  isNew = signal<boolean>(this.project() === null);
   showAddRequirement = signal<boolean>(false);
-  competencies = signal<CompetencyDto[]>([]);
+  competencies = signal<CompetencyDto[]>(this.route.snapshot.data['competencies']);
   activeRequirementId = signal<string | null>(null);
   editingCompetencyId = signal<string | null>(null);
 
@@ -64,10 +58,10 @@ export class ProjectDetail {
   };
 
   form = this.fb.group({
-    name: ['', Validators.required],
-    description: [''],
-    startDate: ['', Validators.required],
-    endDate: ['', Validators.required]
+    name: [this.project()?.name ?? '', Validators.required],
+    description: [this.project()?.description ?? ''],
+    startDate: [this.project()?.startDate?.substring(0, 10) ?? '', Validators.required],
+    endDate: [this.project()?.endDate?.substring(0, 10) ?? '', Validators.required]
   });
 
   requirementForm = this.fb.group({
@@ -87,21 +81,6 @@ export class ProjectDetail {
     requirementType: [RequirementType.Required, Validators.required]
   });
 
-  constructor() {
-    this.projectRoleService.getAll()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: (data) => this.roles.set(data) });
-
-    this.competencyService.getAll()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: (data) => this.competencies.set(data) });
-
-    if (!this.isNew()) {
-      this.loadProject();
-      this.loadTeams();
-    }
-  }
-
   private loadProject(): void {
     this.projectService.getById(this.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -116,12 +95,6 @@ export class ProjectDetail {
           });
         }
       });
-  }
-
-  private loadTeams(): void {
-    this.teamService.getByProject(this.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: (data) => this.teams.set(data) });
   }
 
   onViewTeam(teamId: string): void {
