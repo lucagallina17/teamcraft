@@ -40,6 +40,7 @@ Domain non conosce nessun altro livello. Eccezioni di dominio (`DomainRuleViolat
 - Costruttori di entity interne a un Aggregate sono `internal`.
 - EF Core: mai lasciare `WithMany()` vuoto se l'altra entità ha già una nav collection (FK fantasma).
 - Frontend: stili condivisi (`.page`, `.icon-btn`, ecc.) in `styles.scss` globale. `takeUntilDestroyed(this.destroyRef)` sempre ultimo operatore RxJS. Notifiche via `NotificationService`, mai `alert()`.
+- **Ogni pagina che carica dati per mostrarli usa un route resolver** (`ResolveFn`, colocato nella cartella della feature, es. `employee-list.resolver.ts`), non un fetch nel costruttore — il signal iniziale legge `route.snapshot.data['chiave']`. Se il caricamento serve anche per un refresh a runtime (dopo delete/save), il metodo privato resta e viene richiamato lì, solo la chiamata iniziale nel costruttore sparisce. Pagine composite (es. `project-detail`) risolvono più chiavi in parallelo nello stesso `resolve: {...}`, riusando resolver "lista" già scritti altrove quando possibile.
 
 ## Pattern ricorrenti da applicare sempre
 
@@ -75,12 +76,15 @@ Domain non conosce nessun altro livello. Eccezioni di dominio (`DomainRuleViolat
 - Test: xUnit su `TeamAggregate`, `TeamReviewAggregate`, `ActivateTeamCommandHandler`, `SubmitTeamReviewCommandHandler`. 9/9 verdi.
 - Git: storia riscritta il 2026-09-21 (rimossi ID subscription). Tutto il lavoro JWT + recensione committato e pushato (2026-09-24), inclusi i file rimasti fuori dallo split iniziale (`TeamsController.cs`, `styles.scss`). Locale allineato a `origin/main`.
 - **Deploy Azure aggiornato al 2026-09-24**: backend ripubblicato con JWT + `[Authorize]` + recensione. Il primo deploy dava 500 su tutto perché `Jwt__Key` non era mai stato messo nelle App Settings Azure — risolto. **Bootstrap completato**: `[Authorize]` su `EmployeesController` impediva di creare il primo `Employee` via API senza essere già autenticati; risolto inserendo il primo `Employee` a mano via Query editor SQL, poi registrazione normale dal sito (endpoint di registrazione resta pubblico apposta).
+- **Route resolver aggiunti a tutte le pagine con una GET iniziale** (2026-09-24): 11 nuovi resolver + 9 componenti convertiti, stesso pattern di `employeeDetailResolver`/`competencyDetailResolver`. Fatto da Claude in sessione diretta (non subagent, scelta esplicita di Luca per contenere i token).
 
 ## Modalità di collaborazione (preferenza di Luca)
 
 **Default per qualunque feature non banale, codice compreso (.NET/Angular), non solo Azure/Git/infrastruttura**: guidare passo passo, dare indizi (pattern/file da guardare, concetto mancante) e lasciare che sia Luca a scrivere codice/comandi — **mai codice pronto da incollare, nemmeno se sembra meccanico** (corretto con insistenza il 2026-09-24: niente eccezioni per "tanto è banale", non è Claude a giudicare cosa merita la scorciatoia). Dare sempre del **tu**, mai "voi". Non committare/pushare né toccare risorse cloud in autonomia; mai force-push su `main`, fornire il comando a Luca.
 
 **Eccezione**: se Luca dice esplicitamente "pensaci tu"/"scrivo io" su una parte specifica, quella parte la scrive Claude (anche via subagent `dotnet-dev`) — ma sempre rivedendo il codice del subagent riga per riga prima di darlo per buono. La revisione va comunque sempre fatta anche sul codice scritto da Luca: emersi bug reali di logica e di sicurezza trovati solo in revisione.
+
+**Quando Luca dichiara di aver completato più cose in un messaggio, verificarle/registrarle tutte**, non fermarsi alla prima o a quella più facile da controllare (2026-09-24: Luca aveva detto di aver controllato le colonne di una tabella E committato dei file; Claude ha verificato solo il commit e ha lasciato l'altra parte segnata come "aperta" in memoria, richiedendo una correzione con insistenza).
 
 Bracketed paste nel terminale bash: `bind 'set enable-bracketed-paste off'`.
 
