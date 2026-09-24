@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Loader } from './shared/components/loader';
 import { ConfirmDialog } from './shared/components/confirm-dialog';
 import { Toast } from './shared/components/toast';
+import { AuthService } from './features/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,7 @@ import { Toast } from './shared/components/toast';
     <header class="navbar">
       <div class="navbar__inner">
         <a routerLink="/employees">
-        <img src="/logo-wordmark.svg" alt="TeamCraft" class="navbar__logo" /> 
+        <img src="/logo-wordmark.svg" alt="TeamCraft" class="navbar__logo" />
       </a>
 
         <nav class="navbar__links">
@@ -26,6 +27,15 @@ import { Toast } from './shared/components/toast';
           <a routerLink="/projects" routerLinkActive="is-active">Progetti</a>
           <a routerLink="/affinities" routerLinkActive="is-active">Affinità</a>
         </nav>
+
+        <div class="navbar__auth">
+          @if (authService.currentUser(); as user) {
+            <span class="navbar__user">{{ user.email }}</span>
+            <button type="button" class="text-btn" (click)="onLogout()">Esci</button>
+          } @else {
+            <a routerLink="/login" routerLinkActive="is-active">Accedi</a>
+          }
+        </div>
       </div>
     </header>
 
@@ -95,6 +105,24 @@ import { Toast } from './shared/components/toast';
       border-radius: 2px;
     }
 
+    .navbar__auth {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .navbar__auth a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .navbar__user {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+
     main {
       min-height: calc(100vh - 52px);
     }
@@ -110,4 +138,12 @@ import { Toast } from './shared/components/toast';
     }
   `]
 })
-export class App { }
+export class App {
+  protected readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+}

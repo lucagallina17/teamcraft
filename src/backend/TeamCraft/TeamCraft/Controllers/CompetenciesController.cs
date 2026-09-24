@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamCraft.Application.DTOs.Competency;
 using TeamCraft.Application.Services.Interfaces;
 
@@ -15,6 +16,7 @@ public class CompetenciesController : ControllerBase
         _competencyService = competencyService;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CompetencyDto>>> GetAll()
     {
@@ -22,6 +24,7 @@ public class CompetenciesController : ControllerBase
         return Ok(competencies);
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<CompetencyDto>> GetById(Guid id)
     {
@@ -32,6 +35,7 @@ public class CompetenciesController : ControllerBase
         return Ok(competency);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<CompetencyDto>> Create([FromBody] CreateCompetencyDto dto)
     {
@@ -39,6 +43,7 @@ public class CompetenciesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = competency.Id }, competency);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateCompetencyDto dto)
     {
@@ -46,6 +51,7 @@ public class CompetenciesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {

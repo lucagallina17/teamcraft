@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamCraft.Application.DTOs.Employee;
 using TeamCraft.Application.Services.Interfaces;
 
@@ -15,9 +16,7 @@ public class EmployeesController : ControllerBase
         _employeeService = employeeService;
     }
 
-    /// <summary>
-    /// Restituisce la lista di tutti i dipendenti
-    /// </summary>
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetAll()
     {
@@ -25,9 +24,7 @@ public class EmployeesController : ControllerBase
         return Ok(employees);
     }
 
-    /// <summary>
-    /// Restituisce il dettaglio di un dipendente con le sue competenze
-    /// </summary>
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<EmployeeDetailDto>> GetById(Guid id)
     {
@@ -38,9 +35,7 @@ public class EmployeesController : ControllerBase
         return Ok(employee);
     }
 
-    /// <summary>
-    /// Crea un nuovo dipendente
-    /// </summary>
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<EmployeeDto>> Create([FromBody] CreateEmployeeDto dto)
     {
@@ -48,9 +43,7 @@ public class EmployeesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = employee.Id }, employee);
     }
 
-    /// <summary>
-    /// Aggiorna un dipendente esistente
-    /// </summary>
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateEmployeeDto dto)
     {
@@ -58,9 +51,7 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Elimina un dipendente
-    /// </summary>
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -68,6 +59,7 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPost("{id}/competencies")]
     public async Task<IActionResult> AddCompetency(Guid id, [FromBody] AddCompetencyAssessmentDto dto)
     {
@@ -75,6 +67,7 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("competencies/{assessmentId}")]
     public async Task<IActionResult> RemoveCompetency(Guid assessmentId)
     {

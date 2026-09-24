@@ -19,8 +19,8 @@ export class ProjectService {
         return this.http.get<ProjectDetailDto>(`${this.baseUrl}/${id}`);
     }
 
-    create(dto: CreateProjectDto, createdBy: string): Observable<ProjectDto> {
-        return this.http.post<ProjectDto>(`${this.baseUrl}?createdBy=${createdBy}`, dto);
+    create(dto: CreateProjectDto): Observable<ProjectDto> {
+        return this.http.post<ProjectDto>(`${this.baseUrl}`, dto);
     }
 
     update(id: string, dto: CreateProjectDto): Observable<void> {

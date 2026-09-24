@@ -139,8 +139,7 @@ export class ProjectDetail {
     };
 
     if (this.isNew()) {
-      // createdBy temporaneo — verrà sostituito dall'utente autenticato con JWT
-      this.projectService.create(dto, '00000000-0000-0000-0000-000000000000')
+      this.projectService.create(dto)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (project) => {

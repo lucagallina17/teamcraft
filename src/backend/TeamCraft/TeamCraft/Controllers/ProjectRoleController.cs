@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamCraft.Application.DTOs.ProjectRole;
 using TeamCraft.Application.Services.Interfaces;
 
@@ -12,6 +13,7 @@ public class ProjectRolesController : ControllerBase
 
     public ProjectRolesController(IProjectRoleService service) => _service = service;
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<ProjectRoleDto>> GetById(Guid id)
     {
@@ -20,13 +22,16 @@ public class ProjectRolesController : ControllerBase
         return Ok(role);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectRoleDto>>> GetAll() => Ok(await _service.GetAllAsync());
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ProjectRoleDto>> Create([FromBody] CreateProjectRoleDto dto) =>
         Ok(await _service.CreateAsync(dto));
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateProjectRoleDto dto)
     {
@@ -34,6 +39,7 @@ public class ProjectRolesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {

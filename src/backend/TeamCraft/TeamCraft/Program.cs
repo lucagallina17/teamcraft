@@ -1,14 +1,19 @@
+using System.Text;
 using System.Text.Json.Serialization;
+using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using TeamCraft.Application.Commands;
+using TeamCraft.Application.Consumers;
 using TeamCraft.Application.Interfaces.Repositories;
+using TeamCraft.Application.Repositories;
 using TeamCraft.Application.Services.Implementations;
 using TeamCraft.Application.Services.Interfaces;
-using TeamCraft.Application.Repositories;
+using TeamCraft.Infrastructure.Auth;
 using TeamCraft.Infrastructure.Persistence;
 using TeamCraft.Infrastructure.Persistence.Repositories;
-using TeamCraft.Application.Commands;
-using MassTransit;
-using TeamCraft.Application.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +44,8 @@ builder.Services.AddScoped<IProjectRoleRepository, ProjectRoleRepository>();
 builder.Services.AddScoped<IEmployeeAffinityRepository, EmployeeAffinityRepository>();
 builder.Services.AddScoped<ITeamAggregateRepository, TeamAggregateRepository>();
 builder.Services.AddScoped<ITeamReadRepository, TeamReadRepository>();
+builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
+builder.Services.AddScoped<ITeamReviewAggregateRepository, TeamReviewAggregateRepository>();
 
 // Service
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
@@ -48,6 +55,8 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<ITeamMatchingService, TeamMatchingService>();
 builder.Services.AddScoped<IProjectRoleService, ProjectRoleService>();
 builder.Services.AddScoped<IEmployeeAffinityService, EmployeeAffinityService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers()
         .AddJsonOptions(options =>
@@ -55,7 +64,33 @@ builder.Services.AddControllers()
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         }); ;
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Incolla solo il token, senza il prefisso 'Bearer ' — lo aggiunge Swagger da solo"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ActivateTeamCommandHandler).Assembly));
 builder.Services.AddMassTransit(x =>
 {
@@ -65,6 +100,26 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+// Autenticazione JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+        options.MapInboundClaims = false;
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -87,6 +142,8 @@ app.UseHttpsRedirection();
 
 // Attiva la policy CORS � deve stare prima di UseAuthorization
 app.UseCors("AllowAngularApp");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

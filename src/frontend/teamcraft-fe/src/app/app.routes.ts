@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { employeeDetailResolver } from './features/employees/employee-detail.resolver';
 import { competencyDetailResolver } from './features/competencies/competency-detail.resolver';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -10,6 +11,7 @@ export const routes: Routes = [
     },
     {
         path: 'employees',
+        canActivate: [authGuard],
         children: [
             {
                 path: '',
@@ -28,6 +30,7 @@ export const routes: Routes = [
     },
     {
         path: 'competencies',
+        canActivate: [authGuard],
         children: [
             {
                 path: '',
@@ -46,6 +49,7 @@ export const routes: Routes = [
     },
     {
         path: 'projects',
+        canActivate: [authGuard],
         children: [
             {
                 path: '',
@@ -75,6 +79,7 @@ export const routes: Routes = [
     },
     {
         path: 'project-roles',
+        canActivate: [authGuard],
         children: [
             {
                 path: '',
@@ -92,9 +97,22 @@ export const routes: Routes = [
     },
     {
         path: 'affinities',
+        canActivate: [authGuard],
         loadComponent: () =>
             import('./features/employees/pages/affinity-list/affinity-list')
                 .then(m => m.AffinityList)
+    },
+    {
+        path: 'login',
+        loadComponent: () =>
+            import('./features/auth/pages/login/login')
+                .then(m => m.Login)
+    },
+    {
+        path: 'register',
+        loadComponent: () =>
+            import('./features/auth/pages/register/register')
+                .then(m => m.Register)
     },
     {
         path: '**',

@@ -1,0 +1,38 @@
+<div class="page page--narrow">
+    <div class="page__header page__header--stacked">
+        <h1>Accedi</h1>
+        <p class="page__subtitle">Entra con le tue credenziali TeamCraft</p>
+    </div>
+
+    <p-card styleClass="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+            <div class="form__grid">
+                <div class="field field--full">
+                    <label for="email">Email</label>
+                    <input pInputText id="email" formControlName="email" type="email" />
+                    @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                    <span class="field__error">Inserisci un indirizzo email valido</span>
+                    }
+                </div>
+
+                <div class="field field--full">
+                    <label for="password">Password</label>
+                    <input pInputText id="password" formControlName="password" type="password" />
+                    @if (form.get('password')?.invalid && form.get('password')?.touched) {
+                    <span class="field__error">La password è obbligatoria</span>
+                    }
+                </div>
+            </div>
+
+            <div class="field field--checkbox">
+                <p-checkbox formControlName="rememberMe" [binary]="true" inputId="rememberMe" />
+                <label for="rememberMe">Ricorda la mia email</label>
+            </div>
+
+            <div class="form__actions">
+                <p-button type="submit" label="Accedi" [disabled]="form.invalid" />
+                <a routerLink="/register">Non hai un account? Registrati</a>
+            </div>
+        </form>
+    </p-card>
+</div>

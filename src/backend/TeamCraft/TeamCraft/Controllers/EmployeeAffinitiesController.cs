@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamCraft.Application.DTOs.Employee;
 using TeamCraft.Application.Services.Interfaces;
 
@@ -12,12 +13,14 @@ public class EmployeeAffinitiesController : ControllerBase
 
     public EmployeeAffinitiesController(IEmployeeAffinityService service) => _service = service;
 
+    [Authorize]
     [HttpGet("colleagues")]
     public async Task<ActionResult<IEnumerable<ColleaguePairDto>>> GetColleagues()
     {
         return Ok(await _service.GetColleaguesWithAffinityAsync());
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ColleaguePairDto>> SetAffinity([FromBody] SetAffinityDto dto)
     {

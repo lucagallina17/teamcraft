@@ -1,0 +1,33 @@
+<div class="page page--narrow">
+    <div class="page__header page__header--stacked">
+        <h1>Crea un account</h1>
+        <p class="page__subtitle">Collega il tuo accesso a un dipendente esistente</p>
+    </div>
+
+    <p-card styleClass="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+            <div class="form__grid">
+                <div class="field field--full">
+                    <label for="email">Email</label>
+                    <input pInputText id="email" formControlName="email" type="email" />
+                    @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                    <span class="field__error">Inserisci un indirizzo email valido</span>
+                    }
+                </div>
+
+                <div class="field field--full">
+                    <label for="password">Password</label>
+                    <input pInputText id="password" formControlName="password" type="password" />
+                    @if (form.get('password')?.invalid && form.get('password')?.touched) {
+                    <span class="field__error">La password deve contenere almeno 6 caratteri</span>
+                    }
+                </div>
+            </div>
+
+            <div class="form__actions">
+                <p-button type="submit" label="Registrati" [disabled]="form.invalid" />
+                <a routerLink="/login">Hai già un account? Accedi</a>
+            </div>
+        </form>
+    </p-card>
+</div>

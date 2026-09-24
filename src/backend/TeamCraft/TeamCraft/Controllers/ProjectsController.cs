@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamCraft.Application.DTOs.Project;
 using TeamCraft.Application.Services.Interfaces;
 
@@ -15,6 +18,7 @@ public class ProjectsController : ControllerBase
         _projectService = projectService;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAll()
     {
@@ -22,6 +26,7 @@ public class ProjectsController : ControllerBase
         return Ok(projects);
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<ProjectDetailDto>> GetById(Guid id)
     {
@@ -32,15 +37,18 @@ public class ProjectsController : ControllerBase
         return Ok(project);
     }
 
+    [Authorize]
     [HttpPost]
-    public async Task<ActionResult<ProjectDto>> Create(
-        [FromBody] CreateProjectDto dto,
-        [FromQuery] Guid createdBy)
+    public async Task<ActionResult<ProjectDto>> Create([FromBody] CreateProjectDto dto)
     {
-        var project = await _projectService.CreateAsync(dto, createdBy);
+        var createdBy = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (createdBy == null) return Unauthorized();
+
+        var project = await _projectService.CreateAsync(dto, Guid.Parse(createdBy));
         return CreatedAtAction(nameof(GetById), new { id = project.Id }, project);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateProjectDto dto)
     {
@@ -48,6 +56,7 @@ public class ProjectsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -67,6 +76,7 @@ public class ProjectsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPost("{id}/requirements")]
     public async Task<ActionResult<ProjectRoleRequirementDto>> AddRequirement(Guid id, [FromBody] AddRequirementDto dto)
     {
@@ -74,6 +84,7 @@ public class ProjectsController : ControllerBase
         return Ok(requirement);
     }
 
+    [Authorize]
     [HttpPost("requirements/{requirementId}/competencies")]
     public async Task<IActionResult> AddRequirementCompetency(Guid requirementId, [FromBody] AddRequirementCompetencyDto dto)
     {
@@ -81,6 +92,7 @@ public class ProjectsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("requirements/{requirementId}")]
     public async Task<IActionResult> RemoveRequirement(Guid requirementId)
     {
@@ -88,6 +100,7 @@ public class ProjectsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPut("requirements/competencies/{id}")]
     public async Task<IActionResult> UpdateRequirementCompetency(Guid id, [FromBody] AddRequirementCompetencyDto dto)
     {
@@ -95,6 +108,7 @@ public class ProjectsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPut("{id}/status")]
     public async Task<ActionResult<ProjectDto>> UpdateStatus(Guid id, [FromBody] UpdateProjectStatusDto dto)
     {

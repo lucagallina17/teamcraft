@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="MassTransit" Version="8.5.10" />
     <PackageReference Include="MediatR" Version="14.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.31" />
   </ItemGroup>
 
   <ItemGroup>
