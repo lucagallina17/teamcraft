@@ -73,7 +73,7 @@ Domain non conosce nessun altro livello. Eccezioni di dominio (`DomainRuleViolat
 - `TeamReviewAggregate`: **ora davvero raggiungibile end-to-end** (2026-09-24) — `POST /api/projects/{projectId}/teams/{id}/review`, blocco duplicati, `TeamDto.TeamReview` la espone, UI su `team-detail` (form o sola lettura), visibile solo a team `Closed`.
 - **Autenticazione JWT completa incluso `[Authorize]`** (2026-09-23/24) — login, registrazione per email propria, interceptor con redirect a `/login` su 401, route guard FE. `CreatedBy` su `Project` preso dal claim `sub`, non più placeholder.
 - Test: xUnit su `TeamAggregate`, `TeamReviewAggregate`, `ActivateTeamCommandHandler`, `SubmitTeamReviewCommandHandler`. 9/9 verdi.
-- Git: storia riscritta il 2026-09-21 (rimossi ID subscription). JWT e recensione committati separati il 2026-09-24 (`Add JWT authentication`, `Add end-of-project team review submission`). **Non tutto committato**: `TeamsController.cs` e `styles.scss` hanno modifiche a cavallo tra le due feature, rimasti fuori dallo split.
+- Git: storia riscritta il 2026-09-21 (rimossi ID subscription). Tutto il lavoro JWT + recensione committato e pushato (2026-09-24), inclusi i file rimasti fuori dallo split iniziale (`TeamsController.cs`, `styles.scss`). Locale allineato a `origin/main`.
 - **Deploy Azure aggiornato al 2026-09-24**: backend ripubblicato con JWT + `[Authorize]` + recensione. Il primo deploy dava 500 su tutto perché `Jwt__Key` non era mai stato messo nelle App Settings Azure — risolto. **Bootstrap ancora aperto**: `[Authorize]` su `EmployeesController` impedisce di creare il primo `Employee` via API senza essere già autenticati, e non ci si può autenticare senza un `Employee` esistente. In corso: inserire il primo `Employee` a mano via Query editor SQL, poi registrarsi normalmente (endpoint di registrazione resta pubblico apposta).
 
 ## Modalità di collaborazione (preferenza di Luca)
@@ -86,7 +86,7 @@ Bracketed paste nel terminale bash: `bind 'set enable-bracketed-paste off'`.
 
 ## Prossimi passi
 
-1. **Bootstrap Azure**: inserire il primo `Employee` via SQL, poi registrarsi dal sito; committare `TeamsController.cs`/`styles.scss` residui.
+1. **Bootstrap Azure**: inserire il primo `Employee` via SQL (colonne della tabella già controllate), poi registrarsi dal sito.
 2. Cancellare le risorse del vecchio account Azure (RG, SQL, App Service) per non consumare credito.
 3. Valutare il rename di `UserAccount.Role` (collide con `ProjectRole`) quando si costruisce un vero sistema di ruoli applicativi.
 4. CI/CD anche per il backend (oggi publish manuale da Visual Studio).
