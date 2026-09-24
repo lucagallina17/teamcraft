@@ -29,6 +29,7 @@ Domain non conosce nessun altro livello. Application può usare Domain liberamen
 - **Sync Team↔Project**: il progetto passa a `Active` SOLO quando il team passa a `Active` (non alla creazione/proposta). Nessuna sync automatica quando il team passa a `Closed` (scelta esplicita).
 - **TeamStatus semplificato a 3 valori** (`Proposed`, `Active`, `Closed`) — `Approved` era ridondante con `Active`, rimosso dopo overengineering iniziale.
 - Eliminazione fisica di un `Project` permessa solo se `Status == Draft`; oltre quello, solo `Cancelled` (via cambio stato, non delete).
+- **Autenticazione JWT** (2026-09-23): `ITokenService`/`TokenService` con lo stesso pattern interfaccia-in-Application/implementazione-in-Infrastructure dei repository (generare un token è un dettaglio tecnico, non business logic). `AuthService.RegisterAsync` collega l'account cercando l'`Employee` per **email** (non più per Id scelto da una tendina): evita che un utente colleghi per errore o apposta l'account a un'altra persona. Ruolo di `UserAccount` sempre `"Employee"` fisso lato server, mai scelto dal client (vedi Problemi già risolti). Nessun endpoint ha ancora `[Authorize]`.
 
 ## Convenzioni di codice
 
@@ -47,6 +48,7 @@ Domain non conosce nessun altro livello. Application può usare Domain liberamen
 2. Azioni distruttive o con effetti collaterali a cascata (es. cambio stato che attiva un'altra entità) richiedono conferma esplicita (`ConfirmService`), non solo le eliminazioni.
 3. Prima di introdurre un enum con più di 2-3 valori, verificare che ogni stato rappresenti davvero un momento distinto nel processo reale (evita over-engineering, vedi `TeamStatus.Approved` rimosso).
 4. Query che alimentano decisioni con pareggi possibili (es. algoritmo di matching) devono avere un **tie-break deterministico** esplicito — mai fidarsi dell'ordine implicito del database.
+5. **Mai lasciare che un campo controllato dal client determini un dato rilevante per l'autorizzazione o l'identità** — trovati due bug reali di questo tipo nella registrazione (ruolo scelto liberamente dal client = privilege escalation; `EmployeeId` scelto da una tendina = furto d'identità di un altro dipendente). Ogni volta che un endpoint pubblico scrive `Role`, `EmployeeId`/`UserId`, o campi simili, chiedersi esplicitamente "chi decide questo valore, il server o chi chiama?".
 
 ## Problemi già risolti (non ripetere)
 
@@ -59,29 +61,38 @@ Domain non conosce nessun altro livello. Application può usare Domain liberamen
 - Per usare MediatR `Send`/`Publish`, Command/Event devono implementare esplicitamente `IRequest<T>`/`INotification` — non basta che l'Handler abbia la firma giusta "per coincidenza". Handler: firma esatta `Handle(T request, CancellationToken ct)`.
 - **MassTransit 9.x richiede licenza a pagamento** anche per In-Memory Transport (crash all'avvio con `ConfigurationException`) — restare su **8.5.10** (ultima major open-source) finché non si valuta l'acquisto di una licenza.
 - **Visual Studio non compila `net8.0`** (NETSDK1045) se la versione dell'IDE è troppo vecchia, anche con l'SDK giusto installato a livello di sistema (VS usa un toolset MSBuild interno proprio) — serve VS ≥ 17.8.
+- **Repo pubblico: scansionare prima del primo push** (`git add -n .`, `git grep` per email/GUID/password). I profili di publish di Visual Studio (`Properties/PublishProfiles/*.pubxml`, `ServiceDependencies/*/profile.arm.json`) contengono gli ID delle subscription Azure: ora ignorati in `.gitignore`. `git filter-branch` cancella dal disco i file de-tracciati → salvare prima quelli locali che servono (es. il `.pubxml` attuale).
+- **Regioni Azure**: sul nuovo account "West Europe" è bloccata per nuovi clienti (`RequestDisallowedByAzure`); usare Sweden Central (o altra regione che accetta). SQL admin login non può coincidere con l'admin Entra.
+- **`PasswordHasher<T>` non disponibile in una class library** (`Microsoft.NET.Sdk`, non `Sdk.Web`) senza riferimento esplicito → pacchetto `Microsoft.Extensions.Identity.Core` (non `Microsoft.AspNetCore.Identity`, nome fuorviante). Stesso motivo per cui `IConfiguration.GetValue<T>()` serve `Microsoft.Extensions.Configuration.Binder` a parte da `IConfiguration` stesso.
+- **`[ApiController]` + `return null` su un metodo `ActionResult<T>`** → 200 OK con corpo vuoto, non un errore. Per un fallimento va sempre restituito esplicitamente `Unauthorized()`/`BadRequest()`/ecc.
+- **Reactive Forms Angular**: `getRawValue()` tipizza i campi `string | null` anche con `fb.group()` e valore iniziale non nullo (per via di `reset()`) — dopo un controllo esplicito `if (form.invalid) return`, serve `!` (non-null assertion) sui campi, non è un errore del codice.
 
 ## Stato attuale
 
 - Migrazione `Team` → `TeamAggregate` **completata** in tutto il progetto (Service, Repository, Controller, DB). Nessuna coesistenza residua.
 - Catena end-to-end funzionante: `TeamsController` → `IMediator.Send(ActivateTeamCommand)` → `TeamAggregate.Activate()` → `Publish(TeamActivatedEvent)` → `ActivateProjectOnTeamActivatedHandler` aggiorna `Project`.
 - `TeamReviewAggregate` (feature recensioni fine-progetto) implementata end-to-end: Aggregate, repository, Command/Handler con verifica cross-aggregate, EF Core config, migration applicata.
-- Autenticazione JWT: **non implementata**. `CreatedBy` su `Project` è un placeholder.
+- **Autenticazione JWT: implementata e verificata end-to-end** (2026-09-23) — login, registrazione per email propria, interceptor e route guard sul frontend. `[Authorize]` non ancora applicato a nessun endpoint (l'API resta di fatto pubblica). `CreatedBy` su `Project` resta un placeholder (GUID a zero) finché non si collega all'utente autenticato.
 - MassTransit: solo In-Memory Transport, mai collegato a un vero broker (RabbitMQ/Kafka).
 - Test: xUnit su `TeamAggregate`, `TeamReviewAggregate`, `ActivateTeamCommandHandler`, `SubmitTeamReviewCommandHandler` (con Moq, incl. doppio mock coordinato). 9/9 verdi dopo upgrade a .NET 8.
 - **Deploy completo e verificato** (2026-09-21): backend + DB + frontend online e collegati (CORS verificato con `curl`). Frontend: `environment.ts` = produzione (URL API Azure), `environment.development.ts` = locale (`localhost:7026`), swap via `fileReplacements`; `public/staticwebapp.config.json` fa il fallback SPA.
-- Git: 4 commit su `main`, pushato su GitHub, working tree pulito. `README.md` di root presente (inglese, portfolio). Nota: dopo la creazione della SWA, Azure committa il workflow su GitHub, quindi fare `git pull` prima di un push se il locale è indietro.
+- Git: repo **pubblico** (`github.com/lucagallina17/teamcraft`), 5 commit su `main`, storia riscritta il 2026-09-21 per togliere i profili di publish con gli ID subscription; locale = `origin/main`, pulito. Restano pubblici di proposito `CLAUDE.md`, agente, memoria, `log/`, `ai_output_audit.md` (vetrina del metodo di lavoro con l'AI). `README.md` di root in inglese. Azure committa il workflow SWA su GitHub → `git pull` prima di un push se il locale è indietro.
 
 ## Modalità di collaborazione (preferenza di Luca)
 
-Su Azure/Git/CI-CD/infrastruttura **guidare passo passo e lasciare che digiti lui i comandi** (spiegare il concetto, un passo per volta, aspettare l'esito). Non committare/pushare né toccare risorse cloud in autonomia. Modifiche al codice dell'app possono restare a Claude se richieste.
+**Default per qualunque feature non banale, infrastruttura O codice (.NET/Angular)**: guidare passo passo e lasciare che sia Luca a scrivere codice/comandi (spiegare il concetto, dare l'input un pezzo alla volta, aspettare l'esito). Confermato esplicitamente il 2026-09-22 anche per il codice applicativo (non solo Azure/Git/CI-CD come nella formulazione iniziale) — non assumere di poter scrivere la feature al posto suo senza chiederlo prima. Non committare/pushare né toccare risorse cloud in autonomia; **mai force-push su `main`**: fornire il comando a Luca. Per i comandi bash da incollare: se compaiono caratteri strani è il bracketed paste (`bind 'set enable-bracketed-paste off'`).
+
+**Corretto il 2026-09-24, niente eccezioni per "codice meccanico"**: in precedenza si pensava che DTO banali/using potessero restare come snippet completo da incollare — sbagliato, corretto con insistenza da Luca. **Dare sempre indizi (file da guardare come pattern, campi/percorso concettuale mancante), mai codice pronto**, indipendentemente da quanto un pezzo sembri semplice — non è Claude che deve giudicare cosa è "abbastanza banale" da meritare la scorciatoia. Inoltre: dare sempre del **tu**, mai "voi".
+
+Eccezione confermata il 2026-09-23: se Luca dice esplicitamente "pensaci tu"/"scrivo io" su una parte specifica, quella parte può essere scritta da Claude (anche via subagent `dotnet-dev`) — ma **sempre rivedendo di persona il codice del subagent riga per riga prima di riportarlo come ok**, non fidandosi solo del suo resoconto. Vale anche il contrario: nel codice scritto da Luca durante la stessa feature sono emersi comunque bug reali (due di logica, due di sicurezza — vedi Pattern ricorrenti punto 5) trovati solo in revisione — la revisione va fatta sempre, indipendentemente da chi scrive.
 
 ## Prossimi passi
 
-1. **Cancellare le risorse del vecchio account Azure** (RG, SQL, App Service) per non consumare credito.
-2. Controllare se un profilo di publish del vecchio account (`Properties/PublishProfiles`) è stato committato e ripulirlo.
-3. Autenticazione JWT (mai iniziata).
+1. **`[Authorize]` sugli endpoint**: oggi nessuno ne ha uno, l'API resta pubblica nonostante login/registrazione funzionino. È il pezzo che manca per rendere utile la JWT appena costruita.
+2. **Committare tutto il lavoro della sessione JWT** (backend + frontend, ancora non committato) e cancellare le risorse del vecchio account Azure (RG, SQL, App Service) per non consumare credito.
+3. Valutare il rename di `UserAccount.Role` (collide concettualmente con `ProjectRole`, già esistente per i team) quando si costruisce un vero sistema di ruoli applicativi.
 4. CI/CD anche per il backend (oggi publish manuale da Visual Studio).
 5. Rivalutare il target framework prima di novembre 2026 (fine supporto .NET 8 LTS) — probabile .NET 10.
 6. Valutare se estendere DDD a `Project` (oggi anemico) — `project.Status = ...` scritto direttamente in `ActivateProjectOnTeamActivatedHandler`, nessuna protezione di dominio.
-7. Pulizia: cartella residua `src/backend/TeamCraft/TeamCraft.API/` (vecchio scaffold, fuori dalla `.sln`); `src/ai_output_audit.md` dice ancora ".NET 7".
-8. Notifiche/toast: verificare copertura errori su tutti gli endpoint nuovi (TeamReview). Budget bundle Angular in warning (700 kB vs 500 kB).
+7. Pulizia: cartella residua `src/backend/TeamCraft/TeamCraft.API/` (vecchio scaffold, fuori dalla `.sln`); `src/ai_output_audit.md` dice ancora ".NET 7". Opzionale: GitHub Support per rimuovere le cached views dei vecchi commit (raggiungibili solo via hash, rischio basso).
+8. Notifiche/toast: verificare copertura errori su tutti gli endpoint nuovi (TeamReview). Budget bundle Angular in warning (702 kB vs 500 kB).
