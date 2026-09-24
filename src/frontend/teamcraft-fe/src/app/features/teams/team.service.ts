@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateTeamFromProposalDto, TeamDto, TeamProposalDto, UpdateTeamStatusDto } from './team.model';
+import { CreateTeamFromProposalDto, SubmitTeamReviewDto, TeamDto, TeamProposalDto, TeamReviewDto, UpdateTeamStatusDto } from './team.model';
 
 @Injectable({
     providedIn: 'root'
@@ -33,5 +33,9 @@ export class TeamService {
 
     removeMember(projectId: string, teamId: string, employeeId: string): Observable<TeamDto> {
         return this.http.delete<TeamDto>(`${this.baseUrl}/${projectId}/teams/${teamId}/employees/${employeeId}`);
+    }
+
+    submitReview(projectId: string, teamId: string, dto: SubmitTeamReviewDto): Observable<TeamReviewDto> {
+        return this.http.post<TeamReviewDto>(`${this.baseUrl}/${projectId}/teams/${teamId}/review`, dto);
     }
 }

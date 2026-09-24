@@ -44,5 +44,45 @@
             }
         </p-card>
     </div>
+
+    @if (team()!.status === 'Closed') {
+    <div class="section">
+        <h2>Recensione</h2>
+        <p-card>
+            @if (team()!.teamReview; as review) {
+            <div class="review-summary">
+                <div class="review-summary__stars">
+                    @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <i class="pi" [class.pi-star-fill]="star <= review.score" [class.pi-star]="star > review.score"></i>
+                    }
+                </div>
+                <p class="review-summary__description">{{ review.description }}</p>
+            </div>
+            } @else {
+            <form [formGroup]="reviewForm" (ngSubmit)="onSubmitReview()" class="form">
+                <div class="field">
+                    <label for="score">Punteggio</label>
+                    <p-rating formControlName="score" inputId="score" />
+                    @if (reviewForm.get('score')?.invalid && reviewForm.get('score')?.touched) {
+                    <span class="field__error">Scegli un punteggio da 1 a 5</span>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="description">Descrizione</label>
+                    <textarea pTextarea id="description" formControlName="description" rows="4"></textarea>
+                    @if (reviewForm.get('description')?.invalid && reviewForm.get('description')?.touched) {
+                    <span class="field__error">La descrizione deve contenere almeno 10 caratteri</span>
+                    }
+                </div>
+
+                <div class="form__actions">
+                    <p-button type="submit" label="Invia recensione" [disabled]="reviewForm.invalid" />
+                </div>
+            </form>
+            }
+        </p-card>
+    </div>
+    }
     }
 </div>

@@ -12,6 +12,18 @@ export interface TeamDto {
     status: TeamStatus;
     createdAt: string;
     members: TeamMemberDto[];
+    teamReview: TeamReviewDto | null;
+}
+
+export interface TeamReviewDto {
+    id: string;
+    score: number;
+    description: string;
+}
+
+export interface SubmitTeamReviewDto {
+    score: number;
+    description: string;
 }
 
 export interface TeamMemberDto {

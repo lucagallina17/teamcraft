@@ -9,7 +9,7 @@ namespace TeamCraft.Domain.Entities
         public string Description { get; private set; } = string.Empty;
         public Guid TeamId { get; }
 
-        public TeamReviewAggregate(int score, string description, Guid teamId)
+        public  TeamReviewAggregate(int score, string description, Guid teamId)
         {
             Id = Guid.NewGuid();
             Score = CheckScoreValidity(score);

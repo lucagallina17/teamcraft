@@ -25,7 +25,7 @@ namespace Tests
             var command = new SubmitTeamReview(Guid.NewGuid(), 2, "Descrizione");
 
             // Assert
-            await Assert.ThrowsAsync<DomainRuleViolationException>(()=> handler.Handle(command));
+            await Assert.ThrowsAsync<DomainRuleViolationException>(()=> handler.Handle(command, CancellationToken.None));
 
             mockTeamReviewAggregateRepository.Verify(r => r.AddAsync(It.IsAny<TeamReviewAggregate>()), Times.Never);
         }

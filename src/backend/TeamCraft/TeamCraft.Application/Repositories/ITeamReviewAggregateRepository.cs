@@ -1,11 +1,11 @@
 ﻿using TeamCraft.Domain.Entities;
 
-namespace TeamCraft.Application.Repositories
+namespace TeamCraft.Application.Repositories;
+
+public interface ITeamReviewAggregateRepository
 {
-    public interface ITeamReviewAggregateRepository
-    {
-        Task<TeamReviewAggregate?> GetByIdAsync(Guid id);
-        Task AddAsync(TeamReviewAggregate teamReview);
-        Task UpdateAsync(TeamReviewAggregate teamReview);
-    }
+    Task<TeamReviewAggregate?> GetByIdAsync(Guid id);
+    Task<TeamReviewAggregate?> GetByTeamIdAsync(Guid teamId);
+    Task AddAsync(TeamReviewAggregate teamReview);
+    Task UpdateAsync(TeamReviewAggregate teamReview);
 }

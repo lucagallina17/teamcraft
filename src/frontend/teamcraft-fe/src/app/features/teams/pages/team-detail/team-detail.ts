@@ -1,9 +1,12 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
+import { RatingModule } from 'primeng/rating';
+import { TextareaModule } from 'primeng/textarea';
 import { TeamService } from '../../team.service';
 import { TeamDto, TeamStatus } from '../../team.model';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
@@ -14,7 +17,7 @@ import { NotificationService } from '../../../../shared/services/notification.se
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CardModule, ButtonModule, TagModule, ...COMMON_PIPES],
+  imports: [CardModule, ButtonModule, TagModule, RatingModule, TextareaModule, ReactiveFormsModule, ...COMMON_PIPES],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss']
 })
@@ -25,6 +28,7 @@ export class TeamDetail {
   private readonly confirmService = inject(ConfirmService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly notificationService = inject(NotificationService);
+  private readonly fb = inject(FormBuilder);
 
   private readonly projectId = this.route.snapshot.paramMap.get('projectId')!;
   private readonly teamId = this.route.snapshot.paramMap.get('id')!;
@@ -41,6 +45,11 @@ export class TeamDetail {
   private readonly statusOrder: TeamStatus[] = [
     TeamStatus.Proposed, TeamStatus.Active, TeamStatus.Closed
   ];
+
+  reviewForm = this.fb.group({
+    score: [0, [Validators.required, Validators.min(1), Validators.max(5)]],
+    description: ['', [Validators.required, Validators.minLength(10)]]
+  });
 
   constructor() {
     this.loadTeam();
@@ -84,6 +93,27 @@ export class TeamDetail {
     this.teamService.removeMember(this.projectId, this.teamId, employeeId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ next: (data) => this.team.set(data) });
+  }
+
+  onSubmitReview(): void {
+    if (this.reviewForm.invalid) {
+      this.reviewForm.markAllAsTouched();
+      return;
+    }
+
+    const { score, description } = this.reviewForm.getRawValue();
+
+    this.teamService.submitReview(this.projectId, this.teamId, { score: score!, description: description! })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (review) => {
+          this.team.update(current => current ? { ...current, teamReview: review } : current);
+          this.notificationService.success('Recensione inviata con successo');
+        },
+        error: () => {
+          this.notificationService.error('Impossibile inviare la recensione. Riprova più tardi.');
+        }
+      });
   }
 
   backLabel(): string {

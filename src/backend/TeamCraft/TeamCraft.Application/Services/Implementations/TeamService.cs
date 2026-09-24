@@ -4,6 +4,7 @@ using TeamCraft.Application.Repositories;
 using TeamCraft.Domain.Entities;
 using TeamCraft.Domain.Enums;
 using TeamCraft.Domain.Exceptions;
+using TeamCraft.Application.Commands;
 
 namespace TeamCraft.Application.Services.Implementations
 {
@@ -13,13 +14,21 @@ namespace TeamCraft.Application.Services.Implementations
         private readonly ITeamReadRepository _teamReadRepository;
         private readonly ITeamMatchingService _teamMatchingService;
         private readonly IProjectRepository _projectRepository;
+        private readonly ITeamReviewAggregateRepository _teamReviewAggregateRepository;
 
-        public TeamService(ITeamAggregateRepository teamAggregateRepository, ITeamReadRepository teamReadRepository, ITeamMatchingService teamMatchingService, IProjectRepository projectRepository)
+        public TeamService(
+            ITeamAggregateRepository teamAggregateRepository, 
+            ITeamReadRepository teamReadRepository, 
+            ITeamMatchingService teamMatchingService, 
+            IProjectRepository projectRepository,
+            ITeamReviewAggregateRepository teamReviewAggregateRepository
+            )
         {
             _teamAggregateRepository = teamAggregateRepository;
             _teamReadRepository = teamReadRepository;
             _teamMatchingService = teamMatchingService;
             _projectRepository = projectRepository;
+            _teamReviewAggregateRepository = teamReviewAggregateRepository;
         }
 
         public async Task<IEnumerable<TeamDto>> GetByProjectIdAsync(Guid projectId)
@@ -34,6 +43,19 @@ namespace TeamCraft.Application.Services.Implementations
             var team = await _teamReadRepository.GetByIdWithMembersAsync(id);
 
             if (team == null) return null;
+
+            var teamReview = await _teamReviewAggregateRepository.GetByTeamIdAsync(team.Id);
+
+            if(teamReview != null)
+            {
+                var teamReviewDto = new TeamReviewDto
+                {
+                    Id = teamReview.Id,
+                    Score = teamReview.Score,
+                    Description = teamReview.Description
+                };
+                team.TeamReview = teamReviewDto;
+            }
 
             return team;
         }

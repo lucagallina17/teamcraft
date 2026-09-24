@@ -1,4 +1,5 @@
-﻿using TeamCraft.Domain.Enums;
+﻿using TeamCraft.Application.Commands;
+using TeamCraft.Domain.Enums;
 
 namespace TeamCraft.Application.DTOs.Team
 {
@@ -11,5 +12,6 @@ namespace TeamCraft.Application.DTOs.Team
         public TeamStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<TeamMemberDto> Members { get; set; } = new();
+        public TeamReviewDto? TeamReview { get; set; }
     }
 }

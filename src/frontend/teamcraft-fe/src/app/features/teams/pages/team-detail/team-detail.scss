@@ -59,3 +59,18 @@
     font-size: 13px;
     color: var(--color-text-secondary);
 }
+
+.review-summary__stars {
+    display: flex;
+    gap: 4px;
+    font-size: 20px;
+    color: var(--color-accent);
+    margin-bottom: 12px;
+}
+
+.review-summary__description {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    margin: 0;
+}
